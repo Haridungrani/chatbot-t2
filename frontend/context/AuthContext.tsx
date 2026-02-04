@@ -20,20 +20,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUser = async () => {
     const token = getToken();
+    console.log('Fetching user with token:', token ? 'Token exists' : 'No token');
+    
     if (!token) {
+      console.log('No token found, setting loading to false');
       setLoading(false);
       return;
     }
 
     try {
+      console.log('Calling api.me()...');
       const userData = await api.me();
+      console.log('User data received:', userData);
       setUser(userData);
     } catch (error: any) {
       console.error('Failed to fetch user:', error);
-      // Only remove token if it's actually invalid (401/403)
+      
+      // Check if it's an authentication error
       if (error.message.includes('401') || error.message.includes('403')) {
+        console.log('Authentication error, removing token');
         removeToken();
         setUser(null);
+      } else {
+        console.log('Non-auth error, keeping user state');
       }
     } finally {
       setLoading(false);
@@ -41,13 +50,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log('AuthContext useEffect triggered');
     fetchUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = (token: string, userData: User) => {
+    console.log('Login called with:', { token: token ? 'Token provided' : 'No token', user: userData });
     setToken(token);
     setUser(userData);
+    setLoading(false);
   };
 
   const logout = () => {

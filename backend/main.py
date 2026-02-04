@@ -12,6 +12,7 @@ from auth import (
     verify_password,
     create_access_token,
     get_current_user,
+    validate_password_length,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 
@@ -46,9 +47,9 @@ def read_root():
     return {
         "message": "ChatBot Authentication API",
         "endpoints": {
-            "signup": "/api/auth/signup",
-            "login": "/api/auth/login",
-            "me": "/api/auth/me"
+            "signup": "auth/signup",
+            "login": "auth/login",
+            "me": "auth/me"
         },
         "status": "running"
     }
@@ -61,6 +62,9 @@ def health_check():
 @app.post("/api/auth/signup", response_model=AuthResponse)
 def signup(user_data: UserCreate, db: Session = Depends(get_db)):
     """Register a new user"""
+    # Validate password length
+    validate_password_length(user_data.password)
+    
     # Check if user already exists
     existing_user = db.query(UserModel).filter(
         (UserModel.email == user_data.email) | (UserModel.username == user_data.username)
@@ -106,7 +110,16 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
     # Find user
     user = db.query(UserModel).filter(UserModel.email == user_data.email).first()
     
-    if not user or not verify_password(user_data.password, user.hashed_password):
+    if not user:
+        print(f"Login failed: User not found with email {user_data.email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password"
+        )
+    
+    print(f"Login attempt for user: {user.email}")
+    if not verify_password(user_data.password, user.hashed_password):
+        print(f"Login failed: Password verification failed for {user.email}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"

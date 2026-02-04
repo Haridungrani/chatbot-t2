@@ -1,12 +1,12 @@
-import Cookies from 'js-cookie';
+import { getToken } from './auth';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = 'http://localhost:8000/';
 
 interface User {
   id: number;
   email: string;
   username: string;
-  createdAt: string;
+  created_at: string;
 }
 
 interface AuthResponse {
@@ -16,7 +16,7 @@ interface AuthResponse {
 
 // Helper function to make authenticated requests
 async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
-  const token = Cookies.get('token');
+  const token = getToken();
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
-    throw new Error(error.detail || 'Request failed');
+    throw new Error(`${response.status}: ${error.detail || 'Request failed'}`);
   }
   
   return response.json();
@@ -44,7 +44,7 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
 export const api = {
   // Signup
   signup: async (email: string, username: string, password: string): Promise<AuthResponse> => {
-    return fetchWithAuth('/auth/signup', {
+    return fetchWithAuth('api/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, username, password }),
     });
@@ -52,7 +52,7 @@ export const api = {
   
   // Login
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    return fetchWithAuth('/auth/login', {
+    return fetchWithAuth('api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -60,7 +60,7 @@ export const api = {
   
   // Get current user
   me: async (): Promise<User> => {
-    return fetchWithAuth('/auth/me');
+    return fetchWithAuth('api/auth/me');
   },
 };
 

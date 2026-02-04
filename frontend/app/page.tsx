@@ -110,7 +110,7 @@ export default function Home() {
               </div>
               <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">Member Since</h3>
               <p className="text-base text-zinc-900 dark:text-white font-medium">
-                {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                {new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
               </p>
             </div>
           </div>

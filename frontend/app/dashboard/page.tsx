@@ -40,7 +40,7 @@ export default function ChatBotPage() {
     } else if (lowerMessage.includes('help')) {
       return 'I can help you with various tasks. Try asking me about your account, features, or just chat with me!';
     } else if (lowerMessage.includes('account') || lowerMessage.includes('profile')) {
-      return `Your account details:\n• Email: ${user?.email}\n• Username: ${user?.username}\n• Joined: ${new Date(user?.createdAt || '').toLocaleDateString()}`;
+      return `Your account details:\n• Email: ${user?.email}\n• Username: ${user?.username}\n• Joined: ${new Date(user?.created_at || '').toLocaleDateString()}`;
     } else if (lowerMessage.includes('time')) {
       return `Current time is: ${new Date().toLocaleTimeString()}`;
     } else if (lowerMessage.includes('date')) {
