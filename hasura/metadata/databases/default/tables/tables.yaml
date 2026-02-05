@@ -1,0 +1,183 @@
+version: 3
+tables:
+  - table:
+      name: users
+      schema: public
+    configuration:
+      column_config: {}
+      custom_column_names: {}
+      custom_name: users
+      custom_root_fields: {}
+    object_relationships: []
+    array_relationships:
+      - name: chat_messages
+        using:
+          foreign_key_constraint_on:
+            column: user_id
+            table:
+              name: chat_messages
+              schema: public
+      - name: faqs
+        using:
+          foreign_key_constraint_on:
+            column: created_by
+            table:
+              name: faqs
+              schema: public
+    insert_permissions:
+      - role: anonymous
+        permission:
+          check: {}
+          columns:
+            - email
+            - password_hash
+            - full_name
+    select_permissions:
+      - role: user
+        permission:
+          columns:
+            - id
+            - email
+            - full_name
+            - created_at
+            - updated_at
+            - is_active
+          filter:
+            id:
+              _eq: X-Hasura-User-Id
+    update_permissions:
+      - role: user
+        permission:
+          columns:
+            - full_name
+          filter:
+            id:
+              _eq: X-Hasura-User-Id
+    delete_permissions: []
+
+  - table:
+      name: faqs
+      schema: public
+    configuration:
+      column_config: {}
+      custom_column_names: {}
+      custom_name: faqs
+      custom_root_fields: {}
+    object_relationships:
+      - name: user
+        using:
+          foreign_key_constraint_on: created_by
+    array_relationships: []
+    insert_permissions:
+      - role: user
+        permission:
+          check:
+            created_by:
+              _eq: X-Hasura-User-Id
+          columns:
+            - question
+            - answer
+            - category
+            - created_by
+            - is_published
+    select_permissions:
+      - role: anonymous
+        permission:
+          columns:
+            - id
+            - question
+            - answer
+            - category
+            - created_at
+            - updated_at
+          filter:
+            is_published:
+              _eq: true
+      - role: user
+        permission:
+          columns:
+            - id
+            - question
+            - answer
+            - category
+            - created_by
+            - created_at
+            - updated_at
+            - is_published
+          filter:
+            _or:
+              - is_published:
+                  _eq: true
+              - created_by:
+                  _eq: X-Hasura-User-Id
+    update_permissions:
+      - role: user
+        permission:
+          columns:
+            - question
+            - answer
+            - category
+            - is_published
+          filter:
+            created_by:
+              _eq: X-Hasura-User-Id
+    delete_permissions:
+      - role: user
+        permission:
+          filter:
+            created_by:
+              _eq: X-Hasura-User-Id
+
+  - table:
+      name: chat_messages
+      schema: public
+    configuration:
+      column_config: {}
+      custom_column_names: {}
+      custom_name: chat_messages
+      custom_root_fields: {}
+    object_relationships:
+      - name: user
+        using:
+          foreign_key_constraint_on: user_id
+    array_relationships: []
+    insert_permissions:
+      - role: user
+        permission:
+          check:
+            user_id:
+              _eq: X-Hasura-User-Id
+          columns:
+            - user_id
+            - message
+            - response
+            - session_id
+            - metadata
+    select_permissions:
+      - role: user
+        permission:
+          columns:
+            - id
+            - user_id
+            - message
+            - response
+            - session_id
+            - created_at
+            - metadata
+          filter:
+            user_id:
+              _eq: X-Hasura-User-Id
+    update_permissions:
+      - role: user
+        permission:
+          columns:
+            - metadata
+          filter:
+            user_id:
+              _eq: X-Hasura-User-Id
+    delete_permissions:
+      - role: user
+        permission:
+          filter:
+            user_id:
+              _eq: X-Hasura-User-Id

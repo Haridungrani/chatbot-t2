@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  hasura:
+    image: hasura/graphql-engine:v2.40.0
+    container_name: chatbot_hasura
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      ## PostgreSQL Database URL - Connects to host machine's PostgreSQL
+      ## host.docker.internal allows Docker to connect to localhost on Windows/Mac
+      HASURA_GRAPHQL_DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/chatbot_db2
+      
+      ## Enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      
+      ## Admin secret for Hasura Console (Change this in production!)
+      HASURA_GRAPHQL_ADMIN_SECRET: "chatbot_admin_secret_2026"
+      
+      ## JWT Secret for authentication
+      HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256","key":"your-super-secret-jwt-key-change-this-in-production-32chars"}'
+      
+      ## Enable dev mode (disable in production)
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      
+      ## Enable detailed logging
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      
+      ## Unauthorized role (for public access)
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
+      
+      ## CORS Configuration
+      HASURA_GRAPHQL_CORS_DOMAIN: "*"
+      
+      ## Enable console assets from CDN
+      HASURA_GRAPHQL_ENABLE_CONSOLE_ASSETS: "true"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: chatbot_adminer
+    restart: always
+    ports:
+      - "8081:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      ADMINER_DEFAULT_SERVER: host.docker.internal
+      ADMINER_DESIGN: "nette"
